@@ -1,5 +1,6 @@
 ---
 import BackToTop from "@components/control/BackToTop.astro";
+import DouyinHotSearch from "@components/DouyinHotSearch.astro";
 import Footer from "@components/Footer.astro";
 import Navbar from "@components/Navbar.astro";
 import SideBar from "@components/widget/SideBar.astro";
@@ -63,7 +64,7 @@ const mainPanelTop = siteConfig.banner.enable
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-[17.5rem_auto] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]
+        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:grid-rows-[auto] xl:grid-cols-[17.5rem_minmax(0,1fr)_17.5rem]
     mx-auto gap-4 px-0 md:px-4"
         >
             <!-- Banner image credit -->
@@ -80,9 +81,9 @@ const mainPanelTop = siteConfig.banner.enable
             </a>}
 
 
-            <SideBar class="mb-4 row-start-2 row-end-3 col-span-2 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>
+            <SideBar class="mb-4 row-start-2 row-end-3 col-span-1 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>
 
-            <main id="swup-container" class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden">
+            <main id="swup-container" class="transition-swup-fade col-span-1 lg:col-span-1 overflow-hidden">
                 <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
@@ -93,7 +94,11 @@ const mainPanelTop = siteConfig.banner.enable
                 </div>
             </main>
 
-            <div class="footer col-span-2 onload-animation block lg:hidden">
+            <aside id="right-sidebar" class="col-span-1 lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-1 xl:row-span-2">
+                <DouyinHotSearch />
+            </aside>
+
+            <div class="footer col-span-1 onload-animation block lg:hidden xl:col-span-3">
                 <Footer></Footer>
             </div>
         </div>
