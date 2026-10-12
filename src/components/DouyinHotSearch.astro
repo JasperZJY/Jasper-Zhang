@@ -1,0 +1,95 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<section class="card-base mb-4 overflow-hidden rounded-[var(--radius-large)]" aria-labelledby="douyin-hot-title">
+    <div class="flex items-center justify-between gap-3 px-6 pt-5 md:px-8">
+        <div>
+            <h2 id="douyin-hot-title" class="flex items-center gap-2 text-xl font-bold text-90">
+                <Icon name="material-symbols:local-fire-department-rounded" class="text-2xl text-orange-500" />
+                抖音今日热搜
+            </h2>
+            <p id="douyin-hot-updated" class="mt-1 text-sm text-50" aria-live="polite">正在获取最新榜单…</p>
+        </div>
+        <button id="douyin-hot-refresh" type="button" class="btn-regular flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" aria-label="刷新抖音热搜" title="刷新榜单">
+            <Icon name="material-symbols:refresh-rounded" class="text-xl" />
+        </button>
+    </div>
+
+    <ol id="douyin-hot-list" class="grid grid-cols-1 gap-x-6 px-6 pb-5 pt-3 sm:grid-cols-2 md:px-8" aria-label="抖音热搜排名">
+        {Array.from({ length: 10 }, (_, index) => (
+            <li class="flex min-w-0 items-center gap-3 border-b border-black/5 py-2.5 dark:border-white/10">
+                <span class:list={[
+                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-sm font-bold",
+                    index < 3 ? "bg-orange-500/10 text-orange-500" : "text-50",
+                ]}>{index + 1}</span>
+                <span class="h-4 flex-1 animate-pulse rounded bg-black/5 dark:bg-white/10"></span>
+            </li>
+        ))}
+    </ol>
+
+    <div class="border-t border-black/5 px-6 py-2.5 text-right text-xs text-50 dark:border-white/10 md:px-8">
+        数据来源：<a href="https://douyinhuo.cn/" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--primary)]">抖音火热榜</a>
+    </div>
+</section>
+
+<script>
+    type HotItem = { rank: number; title: string; url?: string };
+    type HotPlatform = { id: string; items?: HotItem[] };
+    type HotResponse = { last_update?: string; platforms?: HotPlatform[] };
+
+    const endpoint = "https://douyinhuo.cn/api/data";
+    async function loadDouyinHotSearch() {
+        const list = document.getElementById("douyin-hot-list");
+        const updated = document.getElementById("douyin-hot-updated");
+        const refresh = document.getElementById("douyin-hot-refresh");
+        if (!list || !updated || !refresh) return;
+
+        refresh.setAttribute("aria-busy", "true");
+        updated.textContent = "正在获取最新榜单…";
+
+        try {
+            const response = await fetch(endpoint, { cache: "no-store" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const data = (await response.json()) as HotResponse;
+            const items = data.platforms?.find((platform) => platform.id === "douyin")?.items;
+            if (!items?.length) throw new Error("榜单暂时没有数据");
+
+            list.replaceChildren(
+                ...items.slice(0, 10).map((item, index) => {
+                    const row = document.createElement("li");
+                    row.className = "flex min-w-0 items-center gap-3 border-b border-black/5 py-2.5 dark:border-white/10";
+
+                    const rank = document.createElement("span");
+                    rank.className = `flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-sm font-bold ${index < 3 ? "bg-orange-500/10 text-orange-500" : "text-50"}`;
+                    rank.textContent = String(item.rank || index + 1);
+
+                    const link = document.createElement("a");
+                    link.className = "min-w-0 truncate text-sm text-75 transition hover:text-[var(--primary)]";
+                    link.href = item.url || `https://so.douyin.com/s?keyword=${encodeURIComponent(item.title)}`;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.textContent = item.title;
+
+                    row.append(rank, link);
+                    return row;
+                }),
+            );
+
+            const time = data.last_update?.slice(11, 16);
+            updated.textContent = time ? `实时榜单 · 更新于 ${time}` : "实时榜单 · 已更新";
+        } catch {
+            list.replaceChildren();
+            updated.textContent = "热搜暂时无法加载，请稍后重试。";
+        } finally {
+            refresh.removeAttribute("aria-busy");
+        }
+    }
+
+    document.addEventListener("click", (event) => {
+        if ((event.target as Element).closest("#douyin-hot-refresh")) loadDouyinHotSearch();
+    });
+    loadDouyinHotSearch();
+    window.swup.hooks.on("page:view", loadDouyinHotSearch);
+</script>
